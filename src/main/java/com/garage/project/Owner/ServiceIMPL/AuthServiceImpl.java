@@ -42,7 +42,6 @@ public class AuthServiceImpl implements AuthService {
 
         garage.setForgotOtp(otp);
         garage.setOtpExpiryTime(LocalDateTime.now().plusMinutes(10));
-        garage.setForgotOtpVerified(0);
 
         garageRepository.save(garage);
 
@@ -62,7 +61,6 @@ public class AuthServiceImpl implements AuthService {
 
         Garage garage = optionalGarage.get();
 
-        if (garage.getForgotOtp() == null || !garage.getForgotOtp().equals(request.getOtp())) {
             return new ApiResponse("failed", "Invalid OTP");
         }
 
@@ -70,7 +68,6 @@ public class AuthServiceImpl implements AuthService {
             return new ApiResponse("failed", "OTP expired");
         }
 
-        garage.setForgotOtpVerified(1);
         garageRepository.save(garage);
 
         return new ApiResponse("success", "OTP verified");
@@ -87,11 +84,9 @@ public class AuthServiceImpl implements AuthService {
 
         Garage garage = optionalGarage.get();
 
-        if (garage.getForgotOtpVerified() == null || garage.getForgotOtpVerified() != 1) {
             return new ApiResponse("failed", "OTP not verified");
         }
 
-        // ✅ FIXED: direct encoder
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         String encodedPassword = encoder.encode(request.getNewpassword());
 

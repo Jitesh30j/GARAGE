@@ -35,21 +35,21 @@ public class Garage {
     private String openingTime;
     private String closingTime;
 
-    /*private boolean isActive = true;*/
+    private boolean isActive = true;
 
     // ================= REGISTRATION OTP =================
     @Column(name = "reg_otp")
     private String regOtp;
 
     @Column(name = "reg_otp_verified")
-    private Integer regOtpVerified = 0;
+    private Integer regOtpVerified = 1;
 
     // ================= FORGOT PASSWORD OTP =================
     @Column(name = "forgot_otp")
     private String forgotOtp;
 
     @Column(name = "forgot_otp_verified")
-    private Integer forgotOtpVerified = 0;
+    private Integer forgotOtpVerified = 1;
 
     // Common expiry
     private LocalDateTime otpExpiryTime;
@@ -98,8 +98,8 @@ public class Garage {
     public String getClosingTime() { return closingTime; }
     public void setClosingTime(String closingTime) { this.closingTime = closingTime; }
 
-   /* public boolean isActive() { return isActive; }
-    public void setActive(boolean active) { isActive = active; }*/
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { isActive = active; }
 
     public String getRegOtp() { return regOtp; }
     public void setRegOtp(String regOtp) { this.regOtp = regOtp; }
