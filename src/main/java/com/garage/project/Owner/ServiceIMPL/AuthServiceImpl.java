@@ -41,6 +41,7 @@ public class AuthServiceImpl implements AuthService {
         String otp = generateOtp();
 
         garage.setForgotOtp(otp);
+        garage.setForgotOtpVerified(1);   // ✅ OTP GENERATED → 0
         garage.setOtpExpiryTime(LocalDateTime.now().plusMinutes(10));
 
         garageRepository.save(garage);
@@ -61,6 +62,8 @@ public class AuthServiceImpl implements AuthService {
 
         Garage garage = optionalGarage.get();
 
+        if (garage.getForgotOtp() == null ||
+                !garage.getForgotOtp().equals(request.getOtp())) {
             return new ApiResponse("failed", "Invalid OTP");
         }
 
@@ -68,6 +71,7 @@ public class AuthServiceImpl implements AuthService {
             return new ApiResponse("failed", "OTP expired");
         }
 
+        garage.setForgotOtpVerified(0);   // ✅ OTP VERIFIED
         garageRepository.save(garage);
 
         return new ApiResponse("success", "OTP verified");
@@ -84,6 +88,8 @@ public class AuthServiceImpl implements AuthService {
 
         Garage garage = optionalGarage.get();
 
+        if (garage.getForgotOtpVerified() == null ||
+                garage.getForgotOtpVerified() != 1) {
             return new ApiResponse("failed", "OTP not verified");
         }
 
@@ -92,6 +98,7 @@ public class AuthServiceImpl implements AuthService {
 
         garage.setPassword(encodedPassword);
 
+        // ✅ reset OTP state after password change
         garage.setForgotOtp(null);
         garage.setForgotOtpVerified(0);
 
