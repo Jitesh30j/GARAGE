@@ -33,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
                 garageRepository.findByEmailOrPhone(request.getEmail(), request.getPhone());
 
         if (optionalGarage.isEmpty()) {
-            return new ApiResponse("failed", "User not found");
+            return new ApiResponse("failed", 404, "User not found", null);
         }
 
         Garage garage = optionalGarage.get();
@@ -41,14 +41,14 @@ public class AuthServiceImpl implements AuthService {
         String otp = generateOtp();
 
         garage.setForgotOtp(otp);
-        garage.setForgotOtpVerified(1);   // ✅ OTP GENERATED → 0
+        garage.setForgotOtpVerified(0);   // OTP GENERATED → 0
         garage.setOtpExpiryTime(LocalDateTime.now().plusMinutes(10));
 
         garageRepository.save(garage);
 
         emailService.sendOtpEmail(garage.getEmail(), otp);
 
-        return new ApiResponse("success", "OTP sent successfully");
+        return new ApiResponse("success", 200, "OTP sent successfully", null);
     }
 
     @Override
@@ -57,24 +57,24 @@ public class AuthServiceImpl implements AuthService {
         Optional<Garage> optionalGarage = garageRepository.findByEmail(request.getEmail());
 
         if (optionalGarage.isEmpty()) {
-            return new ApiResponse("failed", "User not found");
+            return new ApiResponse("failed", 404, "User not found", null);
         }
 
         Garage garage = optionalGarage.get();
 
         if (garage.getForgotOtp() == null ||
                 !garage.getForgotOtp().equals(request.getOtp())) {
-            return new ApiResponse("failed", "Invalid OTP");
+            return new ApiResponse("failed", 400, "Invalid OTP", null);
         }
 
         if (garage.getOtpExpiryTime().isBefore(LocalDateTime.now())) {
-            return new ApiResponse("failed", "OTP expired");
+            return new ApiResponse("failed", 400, "OTP expired", null);
         }
 
-        garage.setForgotOtpVerified(0);   // ✅ OTP VERIFIED
+        garage.setForgotOtpVerified(1);   // OTP VERIFIED → 1
         garageRepository.save(garage);
 
-        return new ApiResponse("success", "OTP verified");
+        return new ApiResponse("success", 200, "OTP verified", null);
     }
 
     @Override
@@ -83,14 +83,14 @@ public class AuthServiceImpl implements AuthService {
         Optional<Garage> optionalGarage = garageRepository.findByEmail(request.getEmail());
 
         if (optionalGarage.isEmpty()) {
-            return new ApiResponse("failed", "User not found");
+            return new ApiResponse("failed", 404, "User not found", null);
         }
 
         Garage garage = optionalGarage.get();
 
         if (garage.getForgotOtpVerified() == null ||
                 garage.getForgotOtpVerified() != 1) {
-            return new ApiResponse("failed", "OTP not verified");
+            return new ApiResponse("failed", 400, "OTP not verified", null);
         }
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -98,12 +98,12 @@ public class AuthServiceImpl implements AuthService {
 
         garage.setPassword(encodedPassword);
 
-        // ✅ reset OTP state after password change
+        // Reset OTP state
         garage.setForgotOtp(null);
         garage.setForgotOtpVerified(0);
 
         garageRepository.save(garage);
 
-        return new ApiResponse("success", "Password reset successful");
+        return new ApiResponse("success", 200, "Password reset successful", null);
     }
 }
